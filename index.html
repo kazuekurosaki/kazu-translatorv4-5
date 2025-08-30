@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novel Translation Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6e9cd2;
+            --accent-color: #ff6b6b;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --border-color: #ddd;
+            --success-color: #28a745;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .api-selector {
+            margin-bottom: 25px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .api-selector label {
+            font-weight: 600;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .api-selector select {
+            padding: 12px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+            width: 250px;
+        }
+        
+        .language-selectors {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+        
+        .language-selector {
+            flex: 1;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid var(--secondary-color);
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        select, button, input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+        }
+        
+        select {
+            background-image: linear-gradient(45deg, transparent 50%, var(--primary-color) 50%),
+                              linear-gradient(135deg, var(--primary-color) 50%, transparent 50%);
+            background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+            background-size: 5px 5px, 5px 5px;
+            background-repeat: no-repeat;
+            appearance: none;
+        }
+        
+        .text-areas {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .text-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .text-area-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            font-family: inherit;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05), 0 0 0 3px rgba(74, 111, 165, 0.1);
+        }
+        
+        .char-count {
+            text-align: right;
+            color: #666;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 5px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        button {
+            background: linear-gradient(to bottom, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        #translateBtn {
+            flex: 2;
+            background: linear-gradient(to bottom, #4a6fa5 0%, #6e9cd2 100%);
+            font-size: 1.1rem;
+        }
+        
+        #clearBtn {
+            background: linear-gradient(to bottom, #6c757d 0%, #a0a7b0 100%);
+        }
+        
+        #copyBtn {
+            background: linear-gradient(to bottom, #28a745 0%, #5cb85c 100%);
+        }
+        
+        #speakBtn {
+            background: linear-gradient(to bottom, #ff6b6b 0%, #ff8e8e 100%);
+        }
+        
+        .translation-info {
+            background-color: #e8f4fc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+            margin-bottom: 25px;
+            font-size: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .translation-info i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+        
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .loader-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .api-key-input {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .api-key-input input {
+            padding: 12px 15px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        @media (max-width: 900px) {
+            .text-areas {
+                flex-direction: column;
+            }
+            
+            .language-selectors {
+                flex-direction: column;
+            }
+            
+            .buttons {
+                flex-wrap: wrap;
+            }
+            
+            button {
+                flex: 1 0 calc(50% - 15px);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            header {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            button {
+                flex: 1 0 100%;
+            }
+            
+            .api-selector select {
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-book"></i> Novel Translation Tool</h1>
+            <p class="description">Terjemahkan novel dengan hasil yang alami seperti manusia menggunakan berbagai API terjemahan</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="api-selector">
+                <label for="apiSelect">Pilih Layanan Terjemahan:</label>
+                <select id="apiSelect">
+                    <option value="google">Google Translate</option>
+                    <option value="deepl">DeepL</option>
+                    <option value="chatgpt">ChatGPT</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="claude">Claude</option>
+                    <option value="grok">Grok</option>
+                </select>
+                
+                <div id="apiKeyInput" class="api-key-input">
+                    <label for="apiKey">Masukkan API Key:</label>
+                    <input type="password" id="apiKey" placeholder="Kunci API Anda">
+                </div>
+            </div>
+            
+            <div class="language-selectors">
+                <div class="language-selector">
+                    <label for="sourceLang">Bahasa Sumber:</label>
+                    <select id="sourceLang">
+                        <option value="auto">Deteksi Otomatis</option>
+                        <option value="ID">Indonesia</option>
+                        <option value="EN">English</option>
+                        <option value="JA">Japanese</option>
+                        <option value="KO">Korean</option>
+                        <option value="ZH">Chinese</option>
+                        <option value="FR">French</option>
+                        <option value="ES">Spanish</option>
+                        <option value="DE">German</option>
+                    </select>
+                </div>
+                
+                <div class="language-selector">
+                    <label for="targetLang">Bahasa Target:</label>
+                    <select id="targetLang">
+                        <option value="ID">Indonesia</option>
+                        <option value="EN" selected>English</option>
+                        <option value="JA">Japanese</option>
+                        <option value="KO">Korean</option>
+                        <option value="ZH">Chinese</option>
+                        <option value="FR">French</option>
+                        <option value="ES">Spanish</option>
+                        <option value="DE">German</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="text-areas">
+                <div class="text-area">
+                    <div class="text-area-header">
+                        <label for="sourceText">Teks Sumber:</label>
+                    </div>
+                    <textarea id="sourceText" placeholder="Masukkan teks novel yang ingin diterjemahkan..."></textarea>
+                    <div class="char-count">
+                        <i class="fas fa-font"></i>
+                        <span id="sourceCharCount">0</span> karakter
+                    </div>
+                </div>
+                
+                <div class="text-area">
+                    <div class="text-area-header">
+                        <label for="translatedText">Hasil Terjemahan:</label>
+                    </div>
+                    <textarea id="translatedText" readonly placeholder="Hasil terjemahan akan muncul di sini..."></textarea>
+                    <div class="char-count">
+                        <i class="fas fa-font"></i>
+                        <span id="translatedCharCount">0</span> karakter
+                    </div>
+                </div>
+            </div>
+            
+            <div class="translation-info">
+                <i class="fas fa-info-circle"></i>
+                <p>Terjemahan akan disesuaikan agar lebih alami seperti tulisan manusia, dengan penyesuaian huruf kapital setelah tanda titik dan penggunaan bahasa yang lebih natural.</p>
+            </div>
+            
+            <div class="loader">
+                <div class="loader-spinner"></div>
+                <p>Menerjemahkan...</p>
+            </div>
+            
+            <div class="buttons">
+                <button id="translateBtn">
+                    <i class="fas fa-language"></i>
+                    Terjemahkan
+                </button>
+                <button id="clearBtn">
+                    <i class="fas fa-broom"></i>
+                    Bersihkan
+                </button>
+                <button id="copyBtn">
+                    <i class="fas fa-copy"></i>
+                    Salin Hasil
+                </button>
+                <button id="speakBtn">
+                    <i class="fas fa-volume-up"></i>
+                    Dengarkan
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 Novel Translation Tool | Dibuat dengan <i class="fas fa-heart" style="color: var(--accent-color);"></i> untuk para pecinta novel</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const apiSelect = document.getElementById('apiSelect');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const apiKey = document.getElementById('apiKey');
+            const sourceLang = document.getElementById('sourceLang');
+            const targetLang = document.getElementById('targetLang');
+            const sourceText = document.getElementById('sourceText');
+            const translatedText = document.getElementById('translatedText');
+            const translateBtn = document.getElementById('translateBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const speakBtn = document.getElementById('speakBtn');
+            const sourceCharCount = document.getElementById('sourceCharCount');
+            const translatedCharCount = document.getElementById('translatedCharCount');
+            const loader = document.querySelector('.loader');
+            
+            // Tampilkan input API key untuk layanan yang membutuhkannya
+            apiSelect.addEventListener('change', function() {
+                const selectedApi = this.value;
+                if (selectedApi === 'deepl' || selectedApi === 'chatgpt' || 
+                    selectedApi === 'gemini' || selectedApi === 'claude' || selectedApi === 'grok') {
+                    apiKeyInput.style.display = 'block';
+                } else {
+                    apiKeyInput.style.display = 'none';
+                }
+            });
+            
+            // Character count update
+            sourceText.addEventListener('input', function() {
+                sourceCharCount.textContent = sourceText.value.length;
+            });
+            
+            // Clear button
+            clearBtn.addEventListener('click', function() {
+                sourceText.value = '';
+                translatedText.value = '';
+                sourceCharCount.textContent = '0';
+                translatedCharCount.textContent = '0';
+            });
+            
+            // Copy button
+            copyBtn.addEventListener('click', function() {
+                if (translatedText.value) {
+                    translatedText.select();
+                    document.execCommand('copy');
+                    
+                    // Feedback visual
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 2000);
+                } else {
+                    alert('Tidak ada teks untuk disalin.');
+                }
+            });
+            
+            // Speak button
+            speakBtn.addEventListener('click', function() {
+                if (translatedText.value) {
+                    const utterance = new SpeechSynthesisUtterance(translatedText.value);
+                    utterance.lang = targetLang.value;
+                    speechSynthesis.speak(utterance);
+                } else {
+                    alert('Tidak ada teks untuk didengarkan.');
+                }
+            });
+            
+            // Function to humanize and capitalize text
+            function humanizeText(text) {
+                if (!text) return text;
+                
+                // Capitalize first letter after periods, exclamation marks, and question marks
+                let result = text.replace(/([.!?])\s*([a-z])/g, function(match, p1, p2) {
+                    return p1 + ' ' + p2.toUpperCase();
+                });
+                
+                // Ensure the first character is uppercase
+                if (result.length > 0) {
+                    result = result.charAt(0).toUpperCase() + result.slice(1);
+                }
+                
+                // Make text more natural by adjusting common translation artifacts
+                const naturalAdjustments = {
+                    'saya': 'aku', // More natural in Indonesian context
+                    ' anda ': ' kamu ', // More informal
+                    ' tersebut': '', // Remove formal indication
+                    ' itu': '' // Remove formal indication
+                };
+                
+                for (const [key, value] of Object.entries(naturalAdjustments)) {
+                    result = result.replace(new RegExp(key, 'gi'), value);
+                }
+                
+                return result;
+            }
+            
+            // Translate using selected API
+            async function translateText(text, source, target) {
+                const selectedApi = apiSelect.value;
+                const apiKeyValue = apiKey.value.trim();
+                
+                // Show loader
+                loader.style.display = 'flex';
+                translateBtn.disabled = true;
+                
+                try {
+                    let translated;
+                    
+                    switch(selectedApi) {
+                        case 'google':
+                            translated = await translateWithGoogle(text, source, target);
+                            break;
+                        case 'deepl':
+                            if (!apiKeyValue) throw new Error('API key diperlukan untuk DeepL');
+                            translated = await translateWithDeepL(text, source, target, apiKeyValue);
+                            break;
+                        case 'chatgpt':
+                            if (!apiKeyValue) throw new Error('API key diperlukan untuk ChatGPT');
+                            translated = await translateWithChatGPT(text, source, target, apiKeyValue);
+                            break;
+                        case 'gemini':
+                            if (!apiKeyValue) throw new Error('API key diperlukan untuk Gemini');
+                            translated = await translateWithGemini(text, source, target, apiKeyValue);
+                            break;
+                        case 'claude':
+                            if (!apiKeyValue) throw new Error('API key diperlukan untuk Claude');
+                            translated = await translateWithClaude(text, source, target, apiKeyValue);
+                            break;
+                        case 'grok':
+                            if (!apiKeyValue) throw new Error('API key diperlukan untuk Grok');
+                            translated = await translateWithGrok(text, source, target, apiKeyValue);
+                            break;
+                        default:
+                            translated = await translateWithGoogle(text, source, target);
+                    }
+                    
+                    // Humanize the translation
+                    const humanized = humanizeText(translated);
+                    
+                    // Display the result
+                    translatedText.value = humanized;
+                    translatedCharCount.textContent = humanized.length;
+                    
+                } catch (error) {
+                    console.error('Translation error:', error);
+                    alert(`Terjadi kesalahan: ${error.message}`);
+                } finally {
+                    // Hide loader
+                    loader.style.display = 'none';
+                    translateBtn.disabled = false;
+                }
+            }
+            
+            // Mock API translation functions - in a real application, these would make actual API calls
+            async function translateWithGoogle(text, source, target) {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // This would be replaced with actual Google Translate API call
+                // For example: using fetch to Google Cloud Translation API
+                return `[Google Translate] ${text}`;
+            }
+            
+            async function translateWithDeepL(text, source, target, apiKey) {
+                await new Promise(resolve => setTimeout(resolve, 1600));
+                // This would be replaced with actual DeepL API call
+                return `[DeepL Translate] ${text}`;
+            }
+            
+            async function translateWithChatGPT(text, source, target, apiKey) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                // This would be replaced with actual ChatGPT API call
+                return `[ChatGPT Translate] ${text}`;
+            }
+            
+            async function translateWithGemini(text, source, target, apiKey) {
+                await new Promise(resolve => setTimeout(resolve, 1700));
+                // This would be replaced with actual Gemini API call
+                return `[Gemini Translate] ${text}`;
+            }
+            
+            async function translateWithClaude(text, source, target, apiKey) {
+                await new Promise(resolve => setTimeout(resolve, 1800));
+                // This would be replaced with actual Claude API call
+                return `[Claude Translate] ${text}`;
+            }
+            
+            async function translateWithGrok(text, source, target, apiKey) {
+                await new Promise(resolve => setTimeout(resolve, 1900));
+                // This would be replaced with actual Grok API call
+                return `[Grok Translate] ${text}`;
+            }
+            
+            // Translate button
+            translateBtn.addEventListener('click', function() {
+                const text = sourceText.value.trim();
+                if (!text) {
+                    alert('Masukkan teks untuk diterjemahkan.');
+                    return;
+                }
+                
+                const source = sourceLang.value === 'auto' ? '' : sourceLang.value;
+                const target = targetLang.value;
+                
+                translateText(text, source, target);
+            });
+        });
+    </script>
+</body>
+</html>
