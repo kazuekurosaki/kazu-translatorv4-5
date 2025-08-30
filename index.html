@@ -803,6 +803,19 @@
                 background: #4a5568;
             }
         }
+        
+        .api-info {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .api-info h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -987,6 +1000,17 @@
             <div class="status" id="progress-status">Memproses...</div>
         </div>
         
+        <div class="api-info">
+            <h3><i class="fas fa-info-circle"></i> Informasi API Terjemahan</h3>
+            <p>Alat ini menggunakan Google Translate API untuk terjemahan. Jika terjemahan tidak bekerja, mungkin karena:</p>
+            <ul>
+                <li>Koneksi internet terputus</li>
+                <li>Google Translate API tidak dapat diakses</li>
+                <li>Pemblokiran oleh browser atau ekstensi</li>
+            </ul>
+            <p>Pastikan Anda terhubung ke internet dan mencoba lagi.</p>
+        </div>
+        
         <footer>
             <p>Alat Penerjemah Novel &copy; 2023 | Hasil terjemahan lebih alami seperti manusia</p>
             <p>Dengan penanganan huruf besar/kecil dan kapitalisasi otomatis</p>
@@ -1153,6 +1177,13 @@
                     text = text.replace(/\boleh karena itu\b/gi, 'jadi'); // More natural
                     text = text.replace(/\bapabila\b/gi, 'kalau'); // More conversational
                     text = text.replace(/\bhingga\b/gi, 'sampai'); // More common
+                    
+                    // Remove excessive formalities for novel mode
+                    if (translationMode === 'novel') {
+                        text = text.replace(/\b tersebut\b/gi, '');
+                        text = text.replace(/\byang telah\b/gi, 'yang');
+                        text = text.replace(/\bdengan demikian\b/gi, 'jadi');
+                    }
                 } else if (targetLang === 'en') {
                     // English naturalization
                     text = text.replace(/\bdo not\b/gi, "don't");
@@ -1205,44 +1236,34 @@
                 });
             }
             
-            // Simulate translation API with naturalization
-            async function simulateTranslation(text, source, target) {
-                // In a real implementation, you would call a translation API here
-                // This is a simulation that returns the text with some modifications
-                // to demonstrate the naturalization process
+            // Translate text using Google Translate API
+            async function translateText(text, source, target) {
+                // Google Translate API endpoint
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(text)}`;
                 
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                let translated = text;
-                
-                // Apply language-specific transformations to simulate translation
-                if (source === 'en' && target === 'id') {
-                    translated = translated.replace(/\bthe\b/gi, '');
-                    translated = translated.replace(/\ba\b/gi, '');
-                    translated = translated.replace(/\ban\b/gi, '');
-                    translated = translated.replace(/\bI\b/g, 'Saya');
-                    translated = translated.replace(/\byou\b/gi, 'kamu');
-                    translated = translated.replace(/\bhe\b/gi, 'dia');
-                    translated = translated.replace(/\bshe\b/gi, 'dia');
-                    translated = translated.replace(/\bit\b/gi, 'itu');
-                    translated = translated.replace(/\bwe\b/gi, 'kita');
-                    translated = translated.replace(/\bthey\b/gi, 'mereka');
-                    translated = translated.replace(/\bis\b/gi, 'adalah');
-                    translated = translated.replace(/\bare\b/gi, 'adalah');
-                    translated = translated.replace(/\bwas\b/gi, 'telah');
-                    translated = translated.replace(/\bwere\b/gi, 'telah');
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error('Terjadi kesalahan saat menerjemahkan');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Extract translated text from response
+                    let translated = '';
+                    if (data && data[0]) {
+                        for (let i = 0; i < data[0].length; i++) {
+                            if (data[0][i] && data[0][i][0]) {
+                                translated += data[0][i][0];
+                            }
+                        }
+                    }
+                    
+                    return translated;
+                } catch (error) {
+                    console.error('Translation error:', error);
+                    throw error;
                 }
-                
-                // Apply naturalization
-                translated = naturalizeText(translated, source, target);
-                
-                // Fix capitalization
-                translated = fixTextCapitalization(translated);
-                
-                // Capitalize after dots
-                translated = capitalizeAfterDots(translated);
-                
-                return translated;
             }
             
             // Handle translation
@@ -1263,7 +1284,7 @@
                 progressStatus.textContent = 'Memulai terjemahan...';
                 
                 try {
-                    // Split long text into chunks
+                    // Split long text into chunks to avoid URL length limits
                     const chunkSize = 1500;
                     const chunks = [];
                     
@@ -1277,11 +1298,19 @@
                         progressBar.value = (i / chunks.length) * 100;
                         progressStatus.textContent = `Menerjemahkan bagian ${i + 1} dari ${chunks.length}...`;
                         
-                        const translatedChunk = await simulateTranslation(chunks[i], source, target);
-                        translatedResult += translatedChunk;
+                        // Translate chunk
+                        const translatedChunk = await translateText(chunks[i], source, target);
                         
-                        // Small delay to simulate processing
-                        await new Promise(resolve => setTimeout(resolve, 500));
+                        // Apply naturalization and formatting
+                        let processedChunk = translatedChunk;
+                        processedChunk = naturalizeText(processedChunk, source, target);
+                        processedChunk = fixTextCapitalization(processedChunk);
+                        processedChunk = capitalizeAfterDots(processedChunk);
+                        
+                        translatedResult += processedChunk;
+                        
+                        // Small delay to avoid rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 300));
                     }
                     
                     translatedText.value = translatedResult;
@@ -1300,11 +1329,61 @@
                 } catch (error) {
                     console.error('Error:', error);
                     progressStatus.textContent = 'Terjadi kesalahan saat menerjemahkan';
-                    showNotification('Terjadi kesalahan saat menerjemahkan: ' + error.message, 'error');
+                    showNotification('Terjadi kesalahan saat menerjemahkan. Pastikan Anda terhubung ke internet dan coba lagi.', 'error');
+                    
+                    // Fallback: use simulated translation as backup
+                    try {
+                        const simulatedTranslation = await simulateTranslation(text, source, target);
+                        translatedText.value = simulatedTranslation;
+                        showNotification('Menggunakan terjemahan simulasi (hasil mungkin kurang akurat)', 'warning');
+                        updateCharCount();
+                    } catch (fallbackError) {
+                        console.error('Fallback error:', fallbackError);
+                    }
                 } finally {
                     translateBtn.disabled = false;
                 }
             });
+            
+            // Simulate translation (fallback)
+            async function simulateTranslation(text, source, target) {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                let translated = text;
+                
+                // Apply language-specific transformations to simulate translation
+                if (source === 'en' && target === 'id') {
+                    translated = translated.replace(/\bthe\b/gi, '');
+                    translated = translated.replace(/\ba\b/gi, '');
+                    translated = translated.replace(/\ban\b/gi, '');
+                    translated = translated.replace(/\bI\b/g, 'Saya');
+                    translated = translated.replace(/\byou\b/gi, 'kamu');
+                    translated = translated.replace(/\bhe\b/gi, 'dia');
+                    translated = translated.replace(/\bshe\b/gi, 'dia');
+                    translated = translated.replace(/\bit\b/gi, 'itu');
+                    translated = translated.replace(/\bwe\b/gi, 'kita');
+                    translated = translated.replace(/\bthey\b/gi, 'mereka');
+                    translated = translated.replace(/\bis\b/gi, 'adalah');
+                    translated = translated.replace(/\bare\b/gi, 'adalah');
+                    translated = translated.replace(/\bwas\b/gi, 'telah');
+                    translated = translated.replace(/\bwere\b/gi, 'telah');
+                    translated = translated.replace(/\bhello\b/gi, 'halo');
+                    translated = translated.replace(/\bgoodbye\b/gi, 'selamat tinggal');
+                    translated = translated.replace(/\bthank you\b/gi, 'terima kasih');
+                }
+                
+                // Apply naturalization
+                translated = naturalizeText(translated, source, target);
+                
+                // Fix capitalization
+                translated = fixTextCapitalization(translated);
+                
+                // Capitalize after dots
+                translated = capitalizeAfterDots(translated);
+                
+                return translated;
+            }
             
             // Save translation to history
             function saveToHistory(source, translated) {
